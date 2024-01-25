@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather, News, and Exchange</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    header {
+      background-color: #343a40;
+      color: white;
+      text-align: center;
+      padding: 1em;
+    }
+
+    main {
+      margin: 20px;
+    }
+
+    section {
+      margin-bottom: 20px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .weather-icon {
+      width: 50px;
+      height: 50px;
+    }
+
+    .news-item {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+
+    .exchange-rates {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .exchange-rate-item {
+      flex: 0 0 48%;
+      margin-bottom: 10px;
+    }
+
+    .loading-spinner {
+      display: none;
+    }
+
+    .refresh-button {
+      margin-top: 10px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <header class="bg-dark text-white">
+    <h1>Weather, News, and Exchange</h1>
+  </header>
+
+  <main class="container">
+    <section id="weather">
+      <h2>Weather Information</h2>
+      <div id="weatherContent">
+        <div class="loading-spinner text-center">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <form id="weatherForm" class="form-inline mb-2">
+          <label for="cityInput" class="mr-2">City:</label>
+          <input type="text" id="cityInput" class="form-control mr-2" placeholder="Enter city" required>
+          <button type="button" class="btn btn-primary" onclick="fetchWeather()">Get Weather</button>
+        </form>
+        <ul>
+          <li><strong>Temperature:</strong> <span id="temperature"></span></li>
+          <li><strong>Description:</strong> <span id="description"></span></li>
+          <li><strong>Coordinates:</strong> <span id="coordinates"></span></li>
+          <li><strong>Feels Like:</strong> <span id="feelsLike"></span></li>
+          <li><strong>Humidity:</strong> <span id="humidity"></span></li>
+          <li><strong>Pressure:</strong> <span id="pressure"></span></li>
+          <li><strong>Wind Speed:</strong> <span id="windSpeed"></span></li>
+          <li><strong>Country Code:</strong> <span id="countryCode"></span></li>
+          <li><strong>Rain Volume (Last 3 hours):</strong> <span id="rainVolume"></span></li>
+        </ul>
+      </div>
+      <button class="btn btn-primary refresh-button" onclick="refreshWeather()">Refresh</button>
+    </section>
+
+    <section id="news">
+      <h2>Top Business Headlines</h2>
+      <div id="newsContent">
+        <div class="loading-spinner text-center">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <ul id="newsList" class="list-group"></ul>
+      </div>
+      <button class="btn btn-primary refresh-button" onclick="refreshNews()">Refresh</button>
+    </section>
+
+    <section id="exchangeRates">
+      <h2>Exchange Rates</h2>
+      <div id="exchangeRatesContent">
+        <div class="loading-spinner text-center">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div class="exchange-rates">
+          <div class="exchange-rate-item">
+            <strong>EUR:</strong> <span id="eurRate"></span>
+          </div>
+          <div class="exchange-rate-item">
+            <strong>GBP:</strong> <span id="gbpRate"></span>
+          </div>
+          <div class="exchange-rate-item">
+            <strong>JPY:</strong> <span id="jpyRate"></span>
+          </div>
+          <div class="exchange-rate-item">
+            <strong>AUD:</strong> <span id="audRate"></span>
+          </div>
+          <div class="exchange-rate-item">
+            <strong>CAD:</strong> <span id="cadRate"></span>
+          </div>
+          <div class="exchange-rate-item">
+            <strong>INR:</strong> <span id="inrRate"></span>
+          </div>
+          <!-- Add more exchange rates as needed -->
+        </div>
+      </div>
+      <button class="btn btn-primary refresh-button" onclick="refreshExchangeRates()">Refresh</button>
+    </section>
+  </main>
+
+  <script>
+    // Function to fetch and update weather information
+    async function fetchWeather() {
+      try {
+        showLoadingSpinner('weather');
+        const city = document.getElementById('cityInput').value;
+        const response = await axios.get(`http://localhost:3000/weather?city=${city}`);
+        const weatherData = response.data;
+
+        // Update HTML elements with weather data
+        document.getElementById('temperature').textContent = weatherData.temperature;
+        document.getElementById('description').textContent = weatherData.description;
+        document.getElementById('coordinates').textContent = `${weatherData.coordinates.latitude}, ${weatherData.coordinates.longitude}`;
+        document.getElementById('feelsLike').textContent = weatherData.feelsLike;
+        document.getElementById('humidity').textContent = weatherData.humidity;
+        document.getElementById('pressure').textContent = weatherData.pressure;
+        document.getElementById('windSpeed').textContent = weatherData.windSpeed;
+        document.getElementById('countryCode').textContent = weatherData.countryCode;
+        document.getElementById('rainVolume').textContent = weatherData.rainVolumeLast3Hours;
+        hideLoadingSpinner('weather');
+      } catch (error) {
+        console.error('Error fetching weather data:', error.message);
+        hideLoadingSpinner('weather');
+      }
+    }
+
+    // Function to fetch and update news information
+    async function fetchNews() {
+      try {
+        showLoadingSpinner('news');
+        const response = await axios.get('http://localhost:3000/news');
+        const newsData = response.data;
+
+        // Update HTML elements with news data
+        const newsListElement = document.getElementById('newsList');
+        newsListElement.innerHTML = ''; // Clear existing content
+
+        newsData.forEach(newsItem => {
+          const li = document.createElement('li');
+          li.textContent = newsItem.title;
+          li.classList.add('list-group-item', 'news-item');
+          newsListElement.appendChild(li);
+        });
+        hideLoadingSpinner('news');
+      } catch (error) {
+        console.error('Error fetching news data:', error.message);
+        hideLoadingSpinner('news');
+      }
+    }
+
+    // Function to fetch and update exchange rates
+    async function fetchExchangeRates() {
+      try {
+        showLoadingSpinner('exchangeRates');
+        const response = await axios.get('http://localhost:3000/exchange-rates');
+        const exchangeRatesData = response.data;
+
+        // Update HTML elements with exchange rates data
+        document.getElementById('eurRate').textContent = exchangeRatesData.EUR;
+        document.getElementById('gbpRate').textContent = exchangeRatesData.GBP;
+        document.getElementById('jpyRate').textContent = exchangeRatesData.JPY;
+        document.getElementById('audRate').textContent = exchangeRatesData.AUD;
+        document.getElementById('cadRate').textContent = exchangeRatesData.CAD;
+        document.getElementById('inrRate').textContent = exchangeRatesData.INR;
+        // Add more exchange rates as needed
+        hideLoadingSpinner('exchangeRates');
+      } catch (error) {
+        console.error('Error fetching exchange rates data:', error.message);
+        hideLoadingSpinner('exchangeRates');
+      }
+    }
+
+    // Function to show loading spinner for a specific section
+    function showLoadingSpinner(sectionId) {
+      document.getElementById(`${sectionId}Content`).style.opacity = '0.5';
+      document.querySelector(`#${sectionId} .loading-spinner`).style.display = 'inline-block';
+    }
+
+    // Function to hide loading spinner for a specific section
+    function hideLoadingSpinner(sectionId) {
+      document.getElementById(`${sectionId}Content`).style.opacity = '1';
+      document.querySelector(`#${sectionId} .loading-spinner`).style.display = 'none';
+    }
+
+    // Function to refresh weather data
+    function refreshWeather() {
+      fetchWeather();
+    }
+
+    // Function to refresh news data
+    function refreshNews() {
+      fetchNews();
+    }
+
+    // Function to refresh exchange rates data
+    function refreshExchangeRates() {
+      fetchExchangeRates();
+    }
+
+    // Fetch data when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchWeather();
+      fetchNews();
+      fetchExchangeRates();
+    });
+  </script>
+</body>
+
+</html>
